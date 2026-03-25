@@ -2,8 +2,8 @@
 THIS FILE CONTAINS THE LOGIC FOR THE DATABASE CREATION AND SEEDING
 1- CREATE THE DATABASE
 2- CONNECT TO THE DATABASE
-3- LIST Avaliable DATABASES
-4- DROP THE TABLES IN THE DATABASE
+3- LIST AVALIABLE DATABASES
+4- DROP THE DATABASE
 '
 # 1- CREATE THE DATABASE
 create_db(){
@@ -36,7 +36,7 @@ connect_db(){
     fi
 }
 
-# 3- LIST Avaliable DATABASES
+# 3- LIST AVALIABLE DATABASES
 list_databases(){
     if [[ ! -d "./data" ]]; then
         echo "No databases folder found, Please create a database first"
@@ -45,5 +45,21 @@ list_databases(){
     else
         echo "Available databases:"
         ls "./data"
+    fi
+}
+
+# 4- DROP THE DATABASE
+drop_db(){
+    read -p "Enter the name of the database to drop: " db_name
+    if [[ -z $db_name ]]; then 
+        echo "Database name is empty Please enter a valid name"
+    elif [[ ! -d "./data/$db_name" ]]; then
+        echo "Database doesn't exist Please enter a valid name"
+    elif [[ $db_name =~ [^a-zA-Z0-9_] ]]; then
+        echo "Database name should only contain letters, numbers, and underscores"
+    else
+        rm -rf "./data/$db_name"
+        rm ./data/$current_db/$table_name.meta
+        echo "Database '$db_name' dropped successfully"
     fi
 }
