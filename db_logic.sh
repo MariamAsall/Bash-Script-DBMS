@@ -2,7 +2,7 @@
 THIS FILE CONTAINS THE LOGIC FOR THE DATABASE CREATION AND SEEDING
 1- CREATE THE DATABASE
 2- CONNECT TO THE DATABASE
-3- LIST THE TABLES IN THE DATABASE
+3- LIST Avaliable DATABASES
 4- DROP THE TABLES IN THE DATABASE
 '
 # 1- CREATE THE DATABASE
@@ -33,5 +33,17 @@ connect_db(){
     else
         cd "./data/$db_name"
         echo "Connected to database '$db_name' successfully"
+    fi
+}
+
+# 3- LIST Avaliable DATABASES
+list_databases(){
+    if [[ ! -d "./data" ]]; then
+        echo "No databases folder found, Please create a database first"
+    elif [[ -z "$(ls -A ./data)" ]]; then
+        echo "Empty folder, No databases found Please create a database first"
+    else
+        echo "Available databases:"
+        ls "./data"
     fi
 }
