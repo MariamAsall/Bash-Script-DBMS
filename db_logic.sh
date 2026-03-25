@@ -58,8 +58,12 @@ drop_db(){
     elif [[ $db_name =~ [^a-zA-Z0-9_] ]]; then
         echo "Database name should only contain letters, numbers, and underscores"
     else
-        rm -rf "./data/$db_name"
-        rm ./data/$current_db/$table_name.meta
-        echo "Database '$db_name' dropped successfully"
+        read -p "Are you sure you want to drop '$db_name'? (y/n): " confirm
+        if [[ $confirm == [yY] ]]; then
+            rm -rf "./data/$db_name"
+            echo "Database '$db_name' dropped successfully"
+        else
+            echo "Operation cancelled"
+        fi
     fi
 }
