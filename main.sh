@@ -6,6 +6,9 @@ AND CONNECTING USER TO SPECIFIC DATABASE
 
 source ./config.sh
 source ./db_logic.sh
+source ./table_logic.sh   
+source ./record_logic.sh
+
 #1- MAIN MENU ITEMS
 main_menu(){
     echo "Welcome to the Database Management System"
