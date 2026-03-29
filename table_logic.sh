@@ -91,6 +91,7 @@ esac
     echo -n "$metadata" > "$table_name.metadata"
     touch "$table_name"
 
+
     echo "✅ Table '$table_name' created successfully!"
 }
 ##################
@@ -374,5 +375,46 @@ awk -F: '{ print NR ". " $0 }' "$table_name"
         awk -F: '{ print NR ". " $0 }' "$table_name"
     else
         echo "Table is now empty."
+=======
+    echo " Table '$table_name' created successfully!"
+    echo "   Files created: $table_name   and   $table_name.metadata"
+}
+
+table_menu
+
+
+# 2- LIST TABLES
+list_tables() {
+    if [[ -z "$current_db" ]]; then
+        echo "No database selected. Please connect to a database first."
+        return
+    fi
+
+    # Check if there are any .metadata files in the current folder
+    if [[ -z "$(ls *.metadata 2>/dev/null)" ]]; then
+        echo "Empty database, No tables found. Please create a table first."
+    else
+        echo "Available tables in database '$current_db':"
+        ls | grep "\.metadata$" | sed 's/\.metadata//' | sed 's/^/ - /'
+    fi
+}
+
+#3- DROP TABLE
+drop_table() {
+    read -p "Enter the name of the table to drop: " table_name
+    
+    if [[ -z "$table_name" ]]; then 
+        echo "Table name cannot be empty. Please enter a valid name."
+    elif [[ ! -f "$table_name" ]]; then
+        echo "Table '$table_name' doesn't exist!"
+    else
+        read -p "Are you sure you want to drop table '$table_name'? (y/n): " confirm
+        if [[ $confirm == [yY] ]]; then
+            rm -f "$table_name" "$table_name.metadata"
+            echo "Table '$table_name' dropped successfully."
+        else
+            echo "Operation cancelled."
+        fi
+
     fi
 }
