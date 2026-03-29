@@ -32,7 +32,9 @@ connect_db(){
         echo "Database name should only contain letters, numbers, and underscores"
     else
         cd "$DB_DIR/$db_name"
+        export current_db="$db_name"
         echo "Connected to database '$db_name' successfully"
+        table_menu
     fi
 }
 

@@ -102,7 +102,7 @@ echo " CREATE NEW TABLE"
     # Create empty data file
     touch "$table_name"
 
-    echo "✅ Table '$table_name' created successfully!"
+    echo " Table '$table_name' created successfully!"
     echo "   Files created: $table_name   and   $table_name.metadata"
 }
 
@@ -110,29 +110,36 @@ table_menu
 
 
 # 2- LIST TABLES
-list_databases(){
-    if [[ ! -d "$DB_DIR" ]]; then
-        echo "No databases folder found, Please create a database first"
-    elif [[ -z "$(ls -A "$DB_DIR")" ]]; then
-        echo "Empty folder, No databases found Please create a database first"
+list_tables() {
+    if [[ -z "$current_db" ]]; then
+        echo "No database selected. Please connect to a database first."
+        return
+    fi
+
+    # Check if there are any .metadata files in the current folder
+    if [[ -z "$(ls *.metadata 2>/dev/null)" ]]; then
+        echo "Empty database, No tables found. Please create a table first."
     else
-        echo "Available databases:"
-        ls "$DB_DIR"
+        echo "Available tables in database '$current_db':"
+        ls | grep "\.metadata$" | sed 's/\.metadata//' | sed 's/^/ - /'
     fi
 }
 
 #3- DROP TABLE
-drop_db(){
-    read -p "Enter the name of the database to drop: " db_name
-    elif [[ ! -d "$DB_DIR/$db_name" ]]; then
-        echo "Database doesn't exist Please enter a valid name"
+drop_table() {
+    read -p "Enter the name of the table to drop: " table_name
+    
+    if [[ -z "$table_name" ]]; then 
+        echo "Table name cannot be empty. Please enter a valid name."
+    elif [[ ! -f "$table_name" ]]; then
+        echo "Table '$table_name' doesn't exist!"
     else
-        read -p "Are you sure you want to drop '$db_name'? (y/n): " confirm
+        read -p "Are you sure you want to drop table '$table_name'? (y/n): " confirm
         if [[ $confirm == [yY] ]]; then
-            rm -rf "$DB_DIR/$db_name"
-            echo "Database '$db_name' dropped successfully"
+            rm -f "$table_name" "$table_name.metadata"
+            echo "Table '$table_name' dropped successfully."
         else
-            echo "Operation cancelled"
+            echo "Operation cancelled."
         fi
     fi
 }
