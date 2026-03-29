@@ -97,65 +97,6 @@ esac
 ##################
 
 update_table() {
-
-    echo "           Update Table"
-
-    read -p "Enter Table Name: " table_name
-
-    if [[ "$table_name" == "" ]]; then
-        echo "Error: Table name cannot be empty!"
-        return
-    fi
-
-    if [[ ! -f "$table_name" || ! -f "$table_name.metadata" ]]; then
-        echo "Error: Table '$table_name' or its metadata does not exist!"
-        return
-    fi
-
-    echo "Current content of table '$table_name':"
-    cat "$table_name"
-    echo "----------------------------------------"
-
-    echo "Available columns:"
-    cat "$table_name.metadata"
-    echo "----------------------------------------"
-
-    read -p "Enter column name to update: " update_col
-    read -p "Enter Primary Key value: " pk_value
-    read -p "Enter new value: " new_value
-
-    if [[ "$update_col" == "" || "$pk_value" == "" || "$new_value" == "" ]]; then
-        echo "Error: Column name, PK value or new value cannot be empty!"
-        return
-    fi
-
-    # Find column number using awk
-    col_num=$(awk -F: -v col="$update_col" '{ if($1 == col) print NR }' "$table_name.metadata" | head -1)
-
-    if [[ "$col_num" == "" ]]; then
-        echo "Error: Column '$update_col' not found in metadata!"
-        return
-    fi
-
-    # Update using awk
-    awk -F: -v pk="$pk_value" -v col_idx="$col_num" -v val="$new_value" '
-    BEGIN {
-        OFS=":"
-    }
-    {
-        if ($1 == pk) {
-            $col_idx = val
-        }
-        print $0
-    }' "$table_name" > temp_file && mv temp_file "$table_name"
-
-    echo "✅ Update completed successfully!"
-    echo "Updated table content:"
-    cat "$table_name"
-}
-
-
-update_table() {
     echo " UPDATE TABLE"
     read -p "Enter Table Name: " table_name
 
