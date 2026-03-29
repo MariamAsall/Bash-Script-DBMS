@@ -10,63 +10,58 @@ insert_table() {
     echo "INSERT INTO TABLE"
     read -p "Enter Table Name: " table_name
 
-    if [[ "$table_name" == "" ]]; then
+    if [[ -z "$table_name" ]]; then
         echo "Please enter a name!"
         return
     fi
 
-    if [[ "$table_name" =~ [^a-zA-Z0-9_] ]]; then
-        echo "Table name should only contain letters, numbers, and underscores"
-        return
-    fi
     if [[ ! -f "$table_name" || ! -f "$table_name.metadata" ]]; then
         echo "Error: Table '$table_name' does not exist!"
         return
     fi
 
-    IFS=':' read -r -a metadata < "$table_name.metadata"
-    num_cols=${metadata[0]}
-    col_names=("${metadata[@]:1:$num_cols}")
-    col_types=("${metadata[@]:1+$num_cols:$num_cols}")
-
     echo "Now enter values for each column:"
-
+    
     record=""
+    col_index=1 
 
-    for ((i=0; i<num_cols; i++)); do
-        col_name="${col_names[i]}"
-        col_type="${col_types[i]}"
+    while IFS=':' read -r col_name col_type is_pk; do
+        
+        while true; do
+            read -p "   $col_name ($col_type) [PK: $is_pk]: " value
 
-        read -p "   $col_name ($col_type): " value
+            if [[ -z "$value" ]]; then
+                echo "      Error: Value for column '$col_name' cannot be empty!"
+                continue 
+            fi
 
-        if [[ "$value" == "" ]]; then
-            echo "Error: Value for column '$col_name' cannot be empty!"
-            return
-        fi
-
-        case $col_type in
-            int)
-                if ! [[ "$value" =~ ^-?[0-9]+$ ]]; then
-                    echo "Error: Value for column '$col_name' must be an integer!"
-                    return
+    
+            if [[ "$col_type" == "int" ]] && ! [[ "$value" =~ ^-?[0-9]+$ ]]; then
+                echo "      Error: Value for column '$col_name' must be an integer!"
+                continue
+            fi
+            if [[ "$is_pk" == "yes" ]]; then
+                
+                if cut -d':' -f"$col_index" "$table_name" | grep -qw "$value"; then
+                    echo "      Error: Primary Key '$value' already exists in column '$col_name'!"
+                    continue
                 fi
-                ;;
-            string)
-                ;;
-            *)
-                echo "Error: Unknown column type '$col_type' for column '$col_name'!"
-                return
-                ;;
-        esac
+            fi
+
+            break 
+        done
 
         record+="$value:"
-    done
+        ((col_index++))
+
+    done < "$table_name.metadata"
 
     record="${record%:}"
+    
     echo "$record" >> "$table_name"
     echo "Record inserted successfully into table '$table_name'"
 }
-
+    
 # 2- Select From Table
 
 #3- Delete From Table

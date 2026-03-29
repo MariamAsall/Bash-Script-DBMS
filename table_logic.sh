@@ -110,5 +110,29 @@ table_menu
 
 
 # 2- LIST TABLES
-list_tables() {
-    echo "Available tables:"
+list_databases(){
+    if [[ ! -d "$DB_DIR" ]]; then
+        echo "No databases folder found, Please create a database first"
+    elif [[ -z "$(ls -A "$DB_DIR")" ]]; then
+        echo "Empty folder, No databases found Please create a database first"
+    else
+        echo "Available databases:"
+        ls "$DB_DIR"
+    fi
+}
+
+#3- DROP TABLE
+drop_db(){
+    read -p "Enter the name of the database to drop: " db_name
+    elif [[ ! -d "$DB_DIR/$db_name" ]]; then
+        echo "Database doesn't exist Please enter a valid name"
+    else
+        read -p "Are you sure you want to drop '$db_name'? (y/n): " confirm
+        if [[ $confirm == [yY] ]]; then
+            rm -rf "$DB_DIR/$db_name"
+            echo "Database '$db_name' dropped successfully"
+        else
+            echo "Operation cancelled"
+        fi
+    fi
+}
