@@ -107,3 +107,8 @@ echo " CREATE NEW TABLE"
 }
 
 table_menu
+
+
+# 2- LIST TABLES
+list_tables() {
+    echo "Available tables:"
