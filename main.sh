@@ -46,22 +46,22 @@ table_menu() {
                create_table
                 ;;
             2)
-                echo "→ You chose: List Tables"
+                list_tables
                 ;;
             3)
-                echo "→ You chose: Drop Table"
+                drop_table
                 ;;
             4)
-                echo "→ You chose: Insert into Table"
+                insert_table
                 ;;
             5)
-                echo "→ You chose: Select From Table"
+                select_record
                 ;;
             6)
-                echo "→ You chose: Delete From Table"
+                delete_record
                 ;;
             7)
-                echo "→ You chose: Update Table"
+                update_table
                 ;;
             8)
                 echo "→ Going back to Main Menu..."
