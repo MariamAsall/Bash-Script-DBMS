@@ -1,19 +1,9 @@
-<<<<<<< HEAD
-#!/bin/bash
-
-source ./config.sh
-source ./db_logic.sh
-source ./table_logic.sh
-source ./record_logic.sh
-
-=======
 source ./config.sh
 source ./db_logic.sh
 source ./table_logic.sh   
 source ./record_logic.sh
 
 #1- MAIN MENU ITEMS
->>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
 main_menu(){
     echo "Welcome to the Database Management System"
     PS3="Please choose an option: "
@@ -29,7 +19,6 @@ main_menu(){
         esac
     done
 }
-<<<<<<< HEAD
 
 table_menu() {
     while true; do
@@ -62,8 +51,3 @@ table_menu() {
 }
 
 main_menu
-=======
-main_menu
-
-
->>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
