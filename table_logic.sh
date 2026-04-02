@@ -1,6 +1,15 @@
 #!/bin/bash
 shopt -s extglob
 
+# ==============================================================================
+# This script contains the logic for creating a new table,
+# including input validation and metadata management. 
+# It is sourced by the main menu script when the user chooses to create a new table. 
+# 1- Create Table
+# 2- List Tables
+# 3- Drop Table
+# 4- Update Table
+# ==============================================================================
 
 # 1- Create Table
 create_table() {
@@ -88,6 +97,65 @@ esac
 ##################
 
 update_table() {
+
+    echo "           Update Table"
+
+    read -p "Enter Table Name: " table_name
+
+    if [[ "$table_name" == "" ]]; then
+        echo "Error: Table name cannot be empty!"
+        return
+    fi
+
+    if [[ ! -f "$table_name" || ! -f "$table_name.metadata" ]]; then
+        echo "Error: Table '$table_name' or its metadata does not exist!"
+        return
+    fi
+
+    echo "Current content of table '$table_name':"
+    cat "$table_name"
+    echo "----------------------------------------"
+
+    echo "Available columns:"
+    cat "$table_name.metadata"
+    echo "----------------------------------------"
+
+    read -p "Enter column name to update: " update_col
+    read -p "Enter Primary Key value: " pk_value
+    read -p "Enter new value: " new_value
+
+    if [[ "$update_col" == "" || "$pk_value" == "" || "$new_value" == "" ]]; then
+        echo "Error: Column name, PK value or new value cannot be empty!"
+        return
+    fi
+
+    # Find column number using awk
+    col_num=$(awk -F: -v col="$update_col" '{ if($1 == col) print NR }' "$table_name.metadata" | head -1)
+
+    if [[ "$col_num" == "" ]]; then
+        echo "Error: Column '$update_col' not found in metadata!"
+        return
+    fi
+
+    # Update using awk
+    awk -F: -v pk="$pk_value" -v col_idx="$col_num" -v val="$new_value" '
+    BEGIN {
+        OFS=":"
+    }
+    {
+        if ($1 == pk) {
+            $col_idx = val
+        }
+        print $0
+    }' "$table_name" > temp_file && mv temp_file "$table_name"
+
+    echo "✅ Update completed successfully!"
+    echo "Updated table content:"
+    cat "$table_name"
+}
+
+
+update_table() {
     echo " UPDATE TABLE"
     read -p "Enter Table Name: " table_name
 
@@ -159,6 +227,160 @@ update_table() {
 }
 
 
+# SELECT record
+
+select_record() {
+    echo " SELECT RECORD"
+    read -p "Enter Table Name: " table_name
+    if [[ -z "$table_name" ]]; then
+        echo "Error: Table name cannot be empty!"
+        return
+    fi
+    if [[ ! -f "$table_name" ]] || [[ ! -f "$table_name.metadata" ]]; then
+        echo "Error: Table '$table_name' or its metadata does not exist!"
+        return
+    fi
+
+  
+    echo "Available Columns:"
+    awk -F: '{ print NR ". " $1 " (" $2 ")" }' "$table_name.metadata"
+
+    # Ask user if they want to filter by any column
+    read -p "Do you want to filter by a specific column? (y/n): " filter_choice
+    filter_choice=$(echo "$filter_choice" | tr '[:upper:]' '[:lower:]')
+
+    if [[ "$filter_choice" == "y" || "$filter_choice" == "yes" ]]; then
+        read -p "Enter column name to filter by: " filter_col
+        read -p "Enter value to search for: " filter_val
+
+        # Validate column exists
+        col_exists=$(awk -F: -v col="$filter_col" '$1 == col {print "yes"}' "$table_name.metadata")
+        if [[ "$col_exists" != "yes" ]]; then
+            echo "Error: Column '$filter_col' not found!"
+            return
+        fi
+
+        # Get column number for filtering
+        col_num=$(awk -F: -v col="$filter_col" '$1 == col {print NR}' "$table_name.metadata")
+
+        echo "Records where $filter_col = $filter_val :"
+        awk -F: -v col_idx="$col_num" -v val="$filter_val" '
+            BEGIN { OFS=":"; found=0 }
+            {
+                if ($col_idx == val) {
+                    print "Record " NR ":"
+                    for(i=1; i<=NF; i++) {
+                        print "  Field " i ": " $i
+                    }
+                    found=1
+                }
+            }
+            END {
+                if (found == 0) print "No matching records found."
+            }
+        ' "$table_name"
+
+    else
+        # Show all records 
+        echo "All Records:"
+        awk -F: '
+            {
+                print "Record " NR ":"
+                for(i=1; i<=NF; i++) {
+                    print "  Field " i ": " $i
+                }
+            }
+        ' "$table_name"
+    fi
+
+    echo "✅ Select completed successfully!"
+    echo "Total records: $(wc -l < "$table_name")"
+}
+# DELETE RECORD 
+
+delete_record() {
+    echo " DELETE RECORD"
+    read -p "Enter Table Name: " table_name
+
+    if [[ "$table_name" == "" ]]; then
+        echo "Error: Table name cannot be empty!"
+        return
+    fi
+    if [[ ! -f "$table_name" ]] || [[ ! -f "$table_name.metadata" ]]; then
+        echo "Error: Table '$table_name' or its metadata does not exist!"
+        return
+    fi
+
+    # Read metadata to find the Primary Key column and its position
+    pk_col_name=""
+    pk_col_num=0
+    col_num=0
+
+      pk_col_num=$(awk -F: '$3=="yes" {print NR}' "$table_name.metadata")
+      pk_col_name=$(awk -F: '$3=="yes" {print $1}' "$table_name.metadata")
+
+    if [[ "$pk_col_name" ==  "" ]]; then
+        echo "Error: No Primary Key defined for this table!"
+        return
+    fi
+  
+    echo "Current Records in '$table_name':"
+    if [[ ! -s "$table_name" ]]; then
+        echo "Table is empty. Nothing to delete."
+        return
+    fi
+
+    # Show records with column names 
+  echo "Records (PK column: $pk_col_name):"
+awk -F: '{ print NR ". " $0 }' "$table_name"
+
+    echo "----------------------------------------"
+    read -p "Enter $pk_col_name value to delete: " pk_value
+
+    if [[ "$pk_value" == "" ]]; then
+        echo "Error: Value cannot be empty!"
+        return
+    fi
+
+    # Check if record exists
+    if ! awk -F: -v pkidx="$pk_col_num" -v val="$pk_value" '$pkidx == val' "$table_name" | grep -q .; then
+        echo "Error: Record with $pk_col_name = '$pk_value' not found!"
+        return
+    fi
+
+
+    read -p "Are you sure you want to delete this record? (y/n): " confirm
+    if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
+        echo "Delete cancelled."
+        return
+    fi
+
+
+    # Delete the record using the correct PK column position
+    awk -F: -v pkidx="$pk_col_num" -v val="$pk_value" '
+        {
+            if ($pkidx != val) {
+                print $0
+            }
+        }
+    ' "$table_name" > temp_file && mv temp_file "$table_name"
+
+    
+
+    echo "✅ Record with $pk_col_name = '$pk_value' has been deleted successfully."
+
+    echo "----------------------------------------"
+    echo "Remaining Records:"
+    if [[ -s "$table_name" ]]; then
+        awk -F: '{ print NR ". " $0 }' "$table_name"
+    else
+        echo "Table is now empty."
+=======
+    echo " Table '$table_name' created successfully!"
+    echo "   Files created: $table_name   and   $table_name.metadata"
+}
+
+table_menu
 
 
 # 2- LIST TABLES
@@ -177,7 +399,7 @@ list_tables() {
     fi
 }
 
-#3- DROP TABLE
+#4- DROP TABLE
 drop_table() {
     read -p "Enter the name of the table to drop: " table_name
     

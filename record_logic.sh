@@ -69,6 +69,7 @@ insert_table() {
     echo "✅ Record inserted successfully into table '$table_name'"
 }
     
+<<<<<<< HEAD
 # 2- Select From Table
 select_record() {
     echo " SELECT RECORD"
@@ -82,6 +83,24 @@ select_record() {
         return
     fi
 
+=======
+
+# SELECT record
+
+select_record() {
+    echo " SELECT RECORD"
+    read -p "Enter Table Name: " table_name
+    if [[ -z "$table_name" ]]; then
+        echo "Error: Table name cannot be empty!"
+        return
+    fi
+    if [[ ! -f "$table_name" ]] || [[ ! -f "$table_name.metadata" ]]; then
+        echo "Error: Table '$table_name' or its metadata does not exist!"
+        return
+    fi
+
+  
+>>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
     echo "Available Columns:"
     awk -F: '{ print NR ". " $1 " (" $2 ")" }' "$table_name.metadata"
 
@@ -137,7 +156,13 @@ select_record() {
     echo "Total records: $(wc -l < "$table_name")"
 }
 
+<<<<<<< HEAD
 # 3- Delete From Table
+=======
+
+# DELETE RECORD 
+
+>>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
 delete_record() {
     echo " DELETE RECORD"
     read -p "Enter Table Name: " table_name
@@ -156,8 +181,13 @@ delete_record() {
     pk_col_num=0
     col_num=0
 
+<<<<<<< HEAD
     pk_col_num=$(awk -F: '$3=="yes" {print NR}' "$table_name.metadata")
     pk_col_name=$(awk -F: '$3=="yes" {print $1}' "$table_name.metadata")
+=======
+      pk_col_num=$(awk -F: '$3=="yes" {print NR}' "$table_name.metadata")
+      pk_col_name=$(awk -F: '$3=="yes" {print $1}' "$table_name.metadata")
+>>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
 
     if [[ "$pk_col_name" ==  "" ]]; then
         echo "Error: No Primary Key defined for this table!"
@@ -171,8 +201,13 @@ delete_record() {
     fi
 
     # Show records with column names 
+<<<<<<< HEAD
     echo "Records (PK column: $pk_col_name):"
     awk -F: '{ print NR ". " $0 }' "$table_name"
+=======
+  echo "Records (PK column: $pk_col_name):"
+awk -F: '{ print NR ". " $0 }' "$table_name"
+>>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
 
     echo "----------------------------------------"
     read -p "Enter $pk_col_name value to delete: " pk_value
@@ -188,12 +223,20 @@ delete_record() {
         return
     fi
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
     read -p "Are you sure you want to delete this record? (y/n): " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
         echo "Delete cancelled."
         return
     fi
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
     # Delete the record using the correct PK column position
     awk -F: -v pkidx="$pk_col_num" -v val="$pk_value" '
         {
@@ -203,5 +246,24 @@ delete_record() {
         }
     ' "$table_name" > temp_file && mv temp_file "$table_name"
 
+<<<<<<< HEAD
     echo "✅ Record with $pk_col_name = '$pk_value' has been deleted successfully."
 }
+=======
+    
+
+    echo "✅ Record with $pk_col_name = '$pk_value' has been deleted successfully."
+
+    echo "----------------------------------------"
+    echo "Remaining Records:"
+    if [[ -s "$table_name" ]]; then
+        awk -F: '{ print NR ". " $0 }' "$table_name"
+    else
+        echo "Table is now empty."
+=======
+    echo " Table '$table_name' created successfully!"
+    echo "   Files created: $table_name   and   $table_name.metadata"
+}
+
+table_menu
+>>>>>>> 1a5efe38cfd3937d0afb550460e1c78264962b87
