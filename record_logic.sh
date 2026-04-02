@@ -7,7 +7,7 @@ THIS IS THE LOGIC FOR MANAGING RECORDS IN THE DATABASE
 
 # 1- Insert into Table
 insert_table() {
-    echo "INSERT INTO TABLE"
+    echo "--- INSERT INTO TABLE ---"
     read -p "Enter Table Name: " table_name
 
     if [[ -z "$table_name" ]]; then
@@ -25,41 +25,53 @@ insert_table() {
     record=""
     col_index=1 
 
-    while IFS=':' read -r col_name col_type is_pk; do
+    # We use '3<' to read the file so it doesn't fight with the keyboard 'read'
+    while IFS=':' read -u 3 -r col_name col_type is_pk; do
         
         while true; do
+            # This read now correctly waits for YOU to type
             read -p "   $col_name ($col_type) [PK: $is_pk]: " value
 
+            # 1. Check if empty
             if [[ -z "$value" ]]; then
                 echo "      Error: Value for column '$col_name' cannot be empty!"
                 continue 
             fi
 
-    
+            # 2. Check if integer
             if [[ "$col_type" == "int" ]] && ! [[ "$value" =~ ^-?[0-9]+$ ]]; then
                 echo "      Error: Value for column '$col_name' must be an integer!"
                 continue
             fi
+
+            # 3. Check for Duplicate Primary Key
             if [[ "$is_pk" == "yes" ]]; then
-                
-                if cut -d':' -f"$col_index" "$table_name" | grep -qw "$value"; then
-                    echo "      Error: Primary Key '$value' already exists in column '$col_name'!"
-                    continue
+                if [[ -f "$table_name" ]]; then
+                    # Check if the value already exists in that specific column
+                    if cut -d':' -f"$col_index" "$table_name" | grep -qw "^$value$"; then
+                        echo "      Error: Primary Key '$value' already exists!"
+                        continue
+                    fi
                 fi
             fi
 
             break 
         done
 
-        record+="$value:"
+        # Build the record string (e.g., 1:Mawada)
+        if [[ -z "$record" ]]; then
+            record="$value"
+        else
+            record="$record:$value"
+        fi
+        
         ((col_index++))
 
-    done < "$table_name.metadata"
+    done 3< "$table_name.metadata"
 
-    record="${record%:}"
-    
+    # Save to file
     echo "$record" >> "$table_name"
-    echo "Record inserted successfully into table '$table_name'"
+    echo "✅ Record inserted successfully into table '$table_name'"
 }
     
 # 2- Select From Table
@@ -204,14 +216,3 @@ awk -F: '{ print NR ". " $0 }' "$table_name"
     
 
     echo "✅ Record with $pk_col_name = '$pk_value' has been deleted successfully."
-
-    echo "----------------------------------------"
-    echo "Remaining Records:"
-    if [[ -s "$table_name" ]]; then
-        awk -F: '{ print NR ". " $0 }' "$table_name"
-    else
-        echo "Table is now empty."
-=======
-    echo " Table '$table_name' created successfully!"
-    echo "   Files created: $table_name   and   $table_name.metadata"
-}
