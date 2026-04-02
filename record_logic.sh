@@ -216,3 +216,4 @@ awk -F: '{ print NR ". " $0 }' "$table_name"
     
 
     echo "✅ Record with $pk_col_name = '$pk_value' has been deleted successfully."
+}
