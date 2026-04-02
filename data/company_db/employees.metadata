@@ -1,0 +1,3 @@
+emp_id:int:yes
+name:string:no
+salary:int:no

@@ -1,13 +1,25 @@
 #!/bin/bash
-#THIS IS THE MAIN SCRIPT FOR THE DATABASE MANAGEMENT SYSTEM
-#IT CONTAINS THE MAIN MENU ITEMS (THE LOGIC FOR THE USER INTERACTION)
-#AND CONNECTING USER TO SPECIFIC DATABASE
-
 
 source ./config.sh
 source ./db_logic.sh
 source ./table_logic.sh
 source ./record_logic.sh
+
+main_menu(){
+    echo "Welcome to the Database Management System"
+    PS3="Please choose an option: "
+    select option in "Create a new database" "Connect to an existing database" "List available databases" "Drop a database" "Exit"; 
+    do
+        case $REPLY in
+            1) create_db ;;
+            2) connect_db ;;
+            3) list_databases ;;
+            4) drop_db ;;
+            5) echo "Exiting the program. Goodbye!"; exit ;;
+            *) echo "Invalid option, Please choose a valid option" ;;
+        esac
+    done
+}
 
 table_menu() {
     while true; do
@@ -25,55 +37,18 @@ table_menu() {
         read -p "Please choose only NUMBERS from (1-8): " choice
 
         case $choice in
-            1)
-               create_table
-                ;;
-            2)
-                list_tables
-                ;;
-            3)
-                drop_table
-                ;;
-            4)
-                insert_table
-                ;;
-            5)
-                select_record
-                ;;
-            6)
-                delete_record
-                ;;
-            7)
-                update_table
-                ;;
-            8)
-                echo "→ Going back to Main Menu..."
-                return
-                ;;
-            "")
-                echo "EMPTY, Please enter a number between 1 and 8."
-                ;;
-            *)
-                echo "Something is wrong! Please enter a number between 1 and 8."
-                ;;
+            1) create_table ;;
+            2) list_tables ;;
+            3) drop_table ;;
+            4) insert_table ;;
+            5) select_record ;;
+            6) delete_record ;;
+            7) update_table ;;
+            8) echo "→ Going back to Main Menu..."; return ;;
+            "") echo "EMPTY, Please enter a number between 1 and 8." ;;
+            *) echo "Something is wrong! Please enter a number between 1 and 8." ;;
         esac
     done
 }
-#1- MAIN MENU ITEMS
-main_menu(){
-    echo "Welcome to the Database Management System"
-    PS3="Please choose an option: "
-    select option in "Create a new database" "Connect to an existing database" "List available databases" "Drop a database" "Exit"; 
-    do
-        case $REPLY in
-            1) create_db ;;
-            2) connect_db ;;
-            3) list_databases ;;
-            4) drop_db ;;
-            5) echo "Exiting the program. Goodbye!"; exit ;;
-            *) echo "Invalid option, Please choose a valid option" ;;
-        esac
-    done
-}
-main_menu
 
+main_menu

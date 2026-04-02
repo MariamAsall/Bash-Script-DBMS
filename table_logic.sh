@@ -1,15 +1,6 @@
 #!/bin/bash
 shopt -s extglob
 
-# ==============================================================================
-# This script contains the logic for creating a new table,
-# including input validation and metadata management. 
-# It is sourced by the main menu script when the user chooses to create a new table. 
-# 1- Create Table
-# 2- List Tables
-# 3- Drop Table
-# 4- Update Table
-# ==============================================================================
 
 # 1- Create Table
 create_table() {
@@ -168,10 +159,6 @@ update_table() {
 }
 
 
-
-
-
-table_menu
 
 
 # 2- LIST TABLES

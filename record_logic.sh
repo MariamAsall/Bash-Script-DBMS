@@ -1,9 +1,4 @@
-:'
-THIS IS THE LOGIC FOR MANAGING RECORDS IN THE DATABASE
-1- Insert into Table
-2- Select From Table
-3- Delete From Table
-'
+#!/bin/bash
 
 # 1- Insert into Table
 insert_table() {
@@ -75,8 +70,6 @@ insert_table() {
 }
     
 # 2- Select From Table
-# SELECT record
-
 select_record() {
     echo " SELECT RECORD"
     read -p "Enter Table Name: " table_name
@@ -89,7 +82,6 @@ select_record() {
         return
     fi
 
-  
     echo "Available Columns:"
     awk -F: '{ print NR ". " $1 " (" $2 ")" }' "$table_name.metadata"
 
@@ -145,7 +137,7 @@ select_record() {
     echo "Total records: $(wc -l < "$table_name")"
 }
 
-#3- Delete From Table
+# 3- Delete From Table
 delete_record() {
     echo " DELETE RECORD"
     read -p "Enter Table Name: " table_name
@@ -164,8 +156,8 @@ delete_record() {
     pk_col_num=0
     col_num=0
 
-      pk_col_num=$(awk -F: '$3=="yes" {print NR}' "$table_name.metadata")
-      pk_col_name=$(awk -F: '$3=="yes" {print $1}' "$table_name.metadata")
+    pk_col_num=$(awk -F: '$3=="yes" {print NR}' "$table_name.metadata")
+    pk_col_name=$(awk -F: '$3=="yes" {print $1}' "$table_name.metadata")
 
     if [[ "$pk_col_name" ==  "" ]]; then
         echo "Error: No Primary Key defined for this table!"
@@ -179,8 +171,8 @@ delete_record() {
     fi
 
     # Show records with column names 
-  echo "Records (PK column: $pk_col_name):"
-awk -F: '{ print NR ". " $0 }' "$table_name"
+    echo "Records (PK column: $pk_col_name):"
+    awk -F: '{ print NR ". " $0 }' "$table_name"
 
     echo "----------------------------------------"
     read -p "Enter $pk_col_name value to delete: " pk_value
@@ -196,13 +188,11 @@ awk -F: '{ print NR ". " $0 }' "$table_name"
         return
     fi
 
-
     read -p "Are you sure you want to delete this record? (y/n): " confirm
     if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
         echo "Delete cancelled."
         return
     fi
-
 
     # Delete the record using the correct PK column position
     awk -F: -v pkidx="$pk_col_num" -v val="$pk_value" '
@@ -213,6 +203,5 @@ awk -F: '{ print NR ". " $0 }' "$table_name"
         }
     ' "$table_name" > temp_file && mv temp_file "$table_name"
 
-    
-
     echo "✅ Record with $pk_col_name = '$pk_value' has been deleted successfully."
+}
